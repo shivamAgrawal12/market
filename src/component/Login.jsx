@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-const API = "http://robotmanagerv1test.qikpod.com:8000";
+const API = "/api";   // proxy path (no mixed content)
 
 const Login = ({ onSuccess }) => {
   const [, setLoading] = useState(false);
   const [, setPopup] = useState(false);
 
-  // -----------------------------
-  // CALL RESUBSCRIBE
-  // -----------------------------
   const callResubscribe = useCallback(async () => {
     try {
       const res = await fetch(`${API}/resubscribe`, { method: "POST" });
@@ -25,9 +22,6 @@ const Login = ({ onSuccess }) => {
     }
   }, [onSuccess]);
 
-  // -----------------------------
-  // START APP AFTER LOGIN
-  // -----------------------------
   const startApp = useCallback(
     async (token) => {
       try {
@@ -35,7 +29,6 @@ const Login = ({ onSuccess }) => {
           method: "POST",
         });
 
-        // now call resubscribe
         callResubscribe();
       } catch (err) {
         console.error("Start app error:", err);
@@ -45,9 +38,6 @@ const Login = ({ onSuccess }) => {
     [callResubscribe]
   );
 
-  // -----------------------------
-  // OPEN LOGIN POPUP
-  // -----------------------------
   const openLoginPopup = useCallback(
     (loginUrl) => {
       const w = 500;
@@ -81,17 +71,12 @@ const Login = ({ onSuccess }) => {
 
             startApp(token);
           }
-        } catch (err) {
-          // ignore cross-origin errors until redirected back
-        }
+        } catch (err) {}
       }, 500);
     },
     [startApp]
   );
 
-  // -----------------------------
-  // INITIAL CHECK ON PAGE LOAD
-  // -----------------------------
   useEffect(() => {
     const checkLogin = async () => {
       try {
@@ -103,7 +88,7 @@ const Login = ({ onSuccess }) => {
         if (data.valid === true) {
           await callResubscribe();
         } else {
-          openLoginPopup(data.login_url || `${API}/login`);
+          openLoginPopup(`${API}/login`);   
         }
       } catch (err) {
         console.error("Login error:", err);
