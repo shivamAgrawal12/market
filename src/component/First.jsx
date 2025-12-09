@@ -72,14 +72,14 @@ const First = () => {
 
             return (
               <div
-                className="rm-card"
+                className={`rm-card ${isPositive ? "rm-glow-green" : "rm-glow-red"}`}
                 key={item.instrument_token || item.tradingsymbol}
               >
                 {/* Top section */}
                 <div className="rm-card-header">
                   <div>
-                    <div className="rm-symbol">{item.tradingsymbol}</div>
-                    <div className="rm-name">{item.name}</div>
+                    <div className="rm-symbol">{item.name}</div>
+                    <div className="rm-name">{item.tradingsymbol}</div>
                   </div>
                   <div className="rm-instrument-type">
                     {item.instrument_type} · {item.segment}

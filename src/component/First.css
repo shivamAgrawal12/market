@@ -287,3 +287,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Dynamic Glowing Borders for Positive / Negative Change */
+
+.rm-glow-green {
+  animation: greenGlow 1.5s infinite alternate;
+  border: 2px solid rgba(34, 197, 94, 0.8) !important;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+.rm-glow-red {
+  animation: redGlow 1.5s infinite alternate;
+  border: 2px solid rgba(239, 68, 68, 0.8) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+
