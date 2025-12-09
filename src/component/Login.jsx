@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 const API = "http://robotmanagerv1test.qikpod.com:8000";
 
 const Login = ({ onSuccess }) => {
-  const [loading, setLoading] = useState(false);
-const [popup, setPopup] = useState(false);
+  const [, setLoading] = useState(false);
+  const [, setPopup] = useState(false);
 
   // -----------------------------
   // CALL RESUBSCRIBE
@@ -86,6 +86,7 @@ const [popup, setPopup] = useState(false);
   // -----------------------------
   // INITIAL CHECK ON PAGE LOAD
   // -----------------------------
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const checkLogin = async () => {
       try {

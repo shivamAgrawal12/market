@@ -23,7 +23,7 @@ const App = () => {
         justifyContent: "center",
         alignItems: "center",
         background: "#0b1120",
-        color: "white"
+        // color: "white"
       }}>
         Loading...
       </div>
