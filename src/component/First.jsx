@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./First.css"; // 👈 create this file (CSS below)
+import "./First.css";
 
 const API_URL = "http://robotmanagerv1test.qikpod.com:8000/latest_data";
 
@@ -35,7 +35,7 @@ const First = () => {
     fetchData();
 
     // Refetch every 10 seconds
-    const intervalId = setInterval(fetchData, 10000);
+    const intervalId = setInterval(fetchData, 1010);
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
@@ -45,9 +45,9 @@ const First = () => {
     <div className="rm-page">
       <header className="rm-header">
         <div>
-          <h1 className="rm-title">Robot Manager – Live Market Cards</h1>
+          <h1 className="rm-title">Live Market</h1>
           <p className="rm-subtitle">
-            Auto-updating every <span className="rm-highlight">10 seconds</span>
+            Updating every <span className="rm-highlight">seconds</span>
           </p>
         </div>
         <div className="rm-status-pill">

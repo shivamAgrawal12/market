@@ -1,0 +1,144 @@
+import React, { useEffect, useState } from "react";
+
+const API = "http://robotmanagerv1test.qikpod.com:8000";
+
+const Login = ({ onSuccess }) => {
+  const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState(null);
+
+  // -----------------------------
+  // CALL RESUBSCRIBE
+  // -----------------------------
+  const callResubscribe = async () => {
+    try {
+      const res = await fetch(`${API}/resubscribe`, { method: "POST" });
+      const data = await res.json();
+
+      if (data.message === "success") {
+        localStorage.setItem("auth_ready", "true");
+        setLoading(false);
+        onSuccess();
+      }
+    } catch (err) {
+      console.error("Resubscribe Error:", err);
+      setLoading(false);
+    }
+  };
+
+  // -----------------------------
+  // OPEN LOGIN POPUP
+  // -----------------------------
+  const openLoginPopup = (loginUrl) => {
+    const w = 500;
+    const h = 700;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top = window.screenY + (window.outerHeight - h) / 2;
+
+    const popupWindow = window.open(
+      loginUrl,
+      "LoginPopup",
+      `width=${w},height=${h},left=${left},top=${top}`
+    );
+
+    setPopup(popupWindow);
+
+    const timer = setInterval(() => {
+      try {
+        if (popupWindow.closed) {
+          clearInterval(timer);
+          return;
+        }
+
+        const url = popupWindow.location.href;
+
+        if (url.includes("request_token=")) {
+          const token = new URL(url).searchParams.get("request_token");
+
+          localStorage.setItem("request_token", token);
+          popupWindow.close();
+          clearInterval(timer);
+
+          startApp(token);
+        }
+      } catch (err) {
+        // ignore cross-origin errors until redirected back
+      }
+    }, 500);
+  };
+
+  // -----------------------------
+  // START APP AFTER LOGIN
+  // -----------------------------
+  const startApp = async (token) => {
+    try {
+      await fetch(`${API}/start_app?request_token=${token}`, {
+        method: "POST",
+      });
+
+      // now call resubscribe
+      callResubscribe();
+    } catch (err) {
+      console.error("Start app error:", err);
+      setLoading(false);
+    }
+  };
+
+  // -----------------------------
+  // INITIAL CHECK ON PAGE LOAD
+  // -----------------------------
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const res = await fetch(`${API}/login`);
+        const data = await res.json();
+
+        if (data.valid === true) {
+          await callResubscribe();
+        } else {
+          openLoginPopup(data.login_url || `${API}/login`);
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        setLoading(false);
+      }
+    };
+
+    checkLogin();
+  }, []);
+
+  return (
+    <div
+      style={{
+        height: "100vh",
+        background: "#020617",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        color: "white",
+        flexDirection: "column",
+      }}
+    >
+      <div className="loader"></div>
+      <p style={{ marginTop: 20, opacity: 0.7 }}>
+        Authenticating… please wait
+      </p>
+
+      <style>{`
+        .loader {
+          border: 4px solid rgba(255, 255, 255, 0.2);
+          border-left-color: #22c55e;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Login;
