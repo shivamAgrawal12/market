@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./First.css";
 
-const API_URL = "http://robotmanagerv1test.qikpod.com:8000/latest_data";
+const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/latest_data";
 
 const First = () => {
   const [records, setRecords] = useState([]);
