@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 const API = "http://robotmanagerv1test.qikpod.com:8000";
 
@@ -9,7 +9,7 @@ const Login = ({ onSuccess }) => {
   // -----------------------------
   // CALL RESUBSCRIBE
   // -----------------------------
-  const callResubscribe = async () => {
+  const callResubscribe = useCallback(async () => {
     try {
       const res = await fetch(`${API}/resubscribe`, { method: "POST" });
       const data = await res.json();
@@ -23,73 +23,80 @@ const Login = ({ onSuccess }) => {
       console.error("Resubscribe Error:", err);
       setLoading(false);
     }
-  };
-
-  // -----------------------------
-  // OPEN LOGIN POPUP
-  // -----------------------------
-  const openLoginPopup = (loginUrl) => {
-    const w = 500;
-    const h = 700;
-    const left = window.screenX + (window.outerWidth - w) / 2;
-    const top = window.screenY + (window.outerHeight - h) / 2;
-
-    const popupWindow = window.open(
-      loginUrl,
-      "LoginPopup",
-      `width=${w},height=${h},left=${left},top=${top}`
-    );
-
-    setPopup(popupWindow);
-
-    const timer = setInterval(() => {
-      try {
-        if (popupWindow.closed) {
-          clearInterval(timer);
-          return;
-        }
-
-        const url = popupWindow.location.href;
-
-        if (url.includes("request_token=")) {
-          const token = new URL(url).searchParams.get("request_token");
-
-          localStorage.setItem("request_token", token);
-          popupWindow.close();
-          clearInterval(timer);
-
-          startApp(token);
-        }
-      } catch (err) {
-        // ignore cross-origin errors until redirected back
-      }
-    }, 500);
-  };
+  }, [onSuccess]);
 
   // -----------------------------
   // START APP AFTER LOGIN
   // -----------------------------
-  const startApp = async (token) => {
-    try {
-      await fetch(`${API}/start_app?request_token=${token}`, {
-        method: "POST",
-      });
+  const startApp = useCallback(
+    async (token) => {
+      try {
+        await fetch(`${API}/start_app?request_token=${token}`, {
+          method: "POST",
+        });
 
-      // now call resubscribe
-      callResubscribe();
-    } catch (err) {
-      console.error("Start app error:", err);
-      setLoading(false);
-    }
-  };
+        // now call resubscribe
+        callResubscribe();
+      } catch (err) {
+        console.error("Start app error:", err);
+        setLoading(false);
+      }
+    },
+    [callResubscribe]
+  );
+
+  // -----------------------------
+  // OPEN LOGIN POPUP
+  // -----------------------------
+  const openLoginPopup = useCallback(
+    (loginUrl) => {
+      const w = 500;
+      const h = 700;
+      const left = window.screenX + (window.outerWidth - w) / 2;
+      const top = window.screenY + (window.outerHeight - h) / 2;
+
+      const popupWindow = window.open(
+        loginUrl,
+        "LoginPopup",
+        `width=${w},height=${h},left=${left},top=${top}`
+      );
+
+      setPopup(popupWindow);
+
+      const timer = setInterval(() => {
+        try {
+          if (popupWindow.closed) {
+            clearInterval(timer);
+            return;
+          }
+
+          const url = popupWindow.location.href;
+
+          if (url.includes("request_token=")) {
+            const token = new URL(url).searchParams.get("request_token");
+
+            localStorage.setItem("request_token", token);
+            popupWindow.close();
+            clearInterval(timer);
+
+            startApp(token);
+          }
+        } catch (err) {
+          // ignore cross-origin errors until redirected back
+        }
+      }, 500);
+    },
+    [startApp]
+  );
 
   // -----------------------------
   // INITIAL CHECK ON PAGE LOAD
   // -----------------------------
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const checkLogin = async () => {
       try {
+        setLoading(true);
+
         const res = await fetch(`${API}/login`);
         const data = await res.json();
 
@@ -105,7 +112,7 @@ const Login = ({ onSuccess }) => {
     };
 
     checkLogin();
-  }, []);
+  }, [callResubscribe, openLoginPopup]);
 
   return (
     <div
