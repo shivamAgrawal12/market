@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 const API = "http://robotmanagerv1test.qikpod.com:8000";
 
 const Login = ({ onSuccess }) => {
-  const [loading, setLoading] = useState(true);
-  const [popup, setPopup] = useState(null);
+  const [loading, setLoading] = useState(false);
+const [popup, setPopup] = useState(false);
 
   // -----------------------------
   // CALL RESUBSCRIBE
