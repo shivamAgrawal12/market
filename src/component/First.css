@@ -292,10 +292,10 @@
 /* Responsive tweaks */
 
 @media (max-width: 640px) {
-  .rm-header {
+  /* .rm-header {
     flex-direction: column;
     align-items: flex-start;
-  }
+  } */
 
   .rm-grid {
     grid-template-columns: 1fr;
