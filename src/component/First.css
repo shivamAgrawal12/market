@@ -1,3 +1,8 @@
+*{
+  padding: 0;
+  margin: 0;
+}
+
 .rm-page {
   min-height: 100vh;
   padding: 24px;
@@ -212,6 +217,15 @@
   letter-spacing: 0.08em;
   color: #6b7280;
 }
+
+.rm-yt-space {
+  margin-left: 15px; 
+}
+
+.rm-meta-item .rm-meta-label.yesterday-volume-label {
+  white-space: nowrap;
+}
+
 
 .rm-meta-value {
   font-size: 12px;

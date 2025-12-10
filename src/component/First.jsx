@@ -82,7 +82,7 @@ const First = () => {
                     <div className="rm-name">{item.tradingsymbol}</div>
                   </div>
                   <div className="rm-instrument-type">
-                    {item.instrument_type} · {item.segment}
+                    {item.instrument_type}
                   </div>
                 </div>
 
@@ -118,13 +118,9 @@ const First = () => {
                         : "-"}
                     </span>
                   </div>
-                  <div className="rm-meta-item">
-                    <span className="rm-meta-label">Lot Size</span>
-                    <span className="rm-meta-value">{item.lot_size}</span>
-                  </div>
-                  <div className="rm-meta-item">
-                    <span className="rm-meta-label">Tick Size</span>
-                    <span className="rm-meta-value">{item.tick_size}</span>
+                  <div className="rm-meta-item rm-yt-space">
+                    <span className="rm-meta-label yesterday-volume-label">Yesterday Volume</span>
+                    <span className="rm-meta-value">{item.yesterday_volume ?? "-"}</span>
                   </div>
                 </div>
 
@@ -150,9 +146,9 @@ const First = () => {
 
                 {/* Footer */}
                 <div className="rm-card-footer">
-                  <span className="rm-chip">
+                  {/* <span className="rm-chip">
                     {item.exchange} · {item.category}
-                  </span>
+                  </span> */}
                   <span className="rm-updated">
                     Updated:{" "}
                     {item.updated_at
