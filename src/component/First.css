@@ -194,12 +194,14 @@
   border: 1px solid rgba(239, 68, 68, 0.8);
 }
 
-/* Meta grid */
-
+/* Meta grid
+   - Use 3 equal columns to keep Strike / Expiry / Yesterday aligned
+   - When Strike is hidden (FUT), the remaining two items will keep consistent widths
+*/
 .rm-meta-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr); /* always 3 equal columns */
+  column-gap: 14px; /* minimal clean space */
   margin-top: 10px;
   position: relative;
   z-index: 1;
@@ -208,7 +210,7 @@
 .rm-meta-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2px;  
 }
 
 .rm-meta-label {
@@ -219,13 +221,12 @@
 }
 
 .rm-yt-space {
-  margin-left: 15px; 
+  min-width: 0;
 }
 
 .rm-meta-item .rm-meta-label.yesterday-volume-label {
   white-space: nowrap;
 }
-
 
 .rm-meta-value {
   font-size: 12px;
@@ -250,7 +251,9 @@
 
 .rm-oi-block {
   flex: 1;
+  min-width: 0;
 }
+
 
 .rm-oi-label {
   font-size: 10px;
@@ -292,13 +295,18 @@
 /* Responsive tweaks */
 
 @media (max-width: 640px) {
-  /* .rm-header {
-    flex-direction: column;
-    align-items: flex-start;
-  } */
 
   .rm-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* make meta grid stack on small screens for perfect readability */
+  .rm-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rm-yt-space {
+    margin-left: 0;
   }
 }
 
@@ -315,4 +323,3 @@
   border: 2px solid rgba(239, 68, 68, 0.8) !important;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
 }
-

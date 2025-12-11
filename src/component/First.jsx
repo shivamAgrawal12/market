@@ -69,6 +69,8 @@ const First = () => {
           {records.map((item) => {
             const change = Number(item.change) || 0;
             const isPositive = change >= 0;
+            const instrumentType = (item.instrument_type || "").toUpperCase();
+            const isFut = instrumentType === "FUT";
 
             return (
               <div
@@ -107,10 +109,6 @@ const First = () => {
                 {/* Middle meta section */}
                 <div className="rm-meta-grid">
                   <div className="rm-meta-item">
-                    <span className="rm-meta-label">Strike</span>
-                    <span className="rm-meta-value">{item.strike}</span>
-                  </div>
-                  <div className="rm-meta-item">
                     <span className="rm-meta-label">Expiry</span>
                     <span className="rm-meta-value">
                       {item.expiry
@@ -118,8 +116,21 @@ const First = () => {
                         : "-"}
                     </span>
                   </div>
+                  
+                  {/* STRIKE - hide when FUT */}
+                  {!isFut ? (
+                    <div className="rm-meta-item">
+                      <span className="rm-meta-label">Strike</span>
+                      <span className="rm-meta-value">{item.strike}</span>
+                    </div>
+                  ) : (
+                    <div className="rm-meta-item">{/* placeholder keeps spacing equal */}</div>
+                  )}
+
+                  
+
                   <div className="rm-meta-item rm-yt-space">
-                    <span className="rm-meta-label yesterday-volume-label">Yesterday Volume</span>
+                    <span className="rm-meta-label yesterday-volume-label">Yday Volume</span>
                     <span className="rm-meta-value">{item.yesterday_volume ?? "-"}</span>
                   </div>
                 </div>
@@ -130,12 +141,19 @@ const First = () => {
                     <div className="rm-oi-label">Open Interest</div>
                     <div className="rm-oi-value">{item.oi ?? "-"}</div>
                   </div>
-                  <div className="rm-oi-block">
-                    <div className="rm-oi-label">Change in OI</div>
-                    <div className="rm-oi-value">
-                      {item.change_in_oi ?? "-"}
+
+                  {/* CHANGE IN OI - hide when FUT */}
+                  {!isFut ? (
+                    <div className="rm-oi-block">
+                      <div className="rm-oi-label">Change in OI</div>
+                      <div className="rm-oi-value">
+                        {item.change_in_oi ?? "-"}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="rm-oi-block">{/* placeholder keeps spacing equal */}</div>
+                  )}
+
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Volume Traded</div>
                     <div className="rm-oi-value">
