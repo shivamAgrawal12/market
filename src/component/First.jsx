@@ -1,45 +1,133 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import "./First.css";
 
-const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/latest_data";
+const WS_URL = "wss://robotmanagerv1test.qikpod.com/smartdisplay/data";
+
+const NO_DATA_MESSAGE =
+  "Market is closed or not able to get records. Please try again after some time.";
 
 const First = () => {
   const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchData = async () => {
-    try {
+  const wsRef = useRef(null);
+  const heartbeatRef = useRef(null);
+  const lastPricesRef = useRef({});
+
+  const showNoData = useCallback(() => {
+    setRecords([]);
+    setError(NO_DATA_MESSAGE);
+  }, []);
+
+  const connectWebSocket = useCallback(() => {
+    wsRef.current = new WebSocket(WS_URL);
+
+    wsRef.current.onopen = () => {
       setError("");
-      const res = await fetch(API_URL);
 
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+      // Heartbeat / ping every 5 seconds
+      heartbeatRef.current = setInterval(() => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({ type: "ping" }));
+        }
+      }, 5000);
+    };
+
+    wsRef.current.onmessage = (event) => {
+      try {
+        if (!event?.data) {
+          showNoData();
+          return;
+        }
+
+        const payload = JSON.parse(event.data);
+
+        // 404 or invalid payload
+        if (!payload || payload === 404) {
+          showNoData();
+          return;
+        }
+
+        // { data: [] }
+        if (
+          payload.data &&
+          Array.isArray(payload.data) &&
+          payload.data.length === 0
+        ) {
+          showNoData();
+          return;
+        }
+
+        // [] empty array
+        if (Array.isArray(payload) && payload.length === 0) {
+          showNoData();
+          return;
+        }
+
+        // Normalize response
+        const list = Array.isArray(payload)
+          ? payload
+          : payload.data
+          ? payload.data
+          : [payload];
+
+        if (!list || list.length === 0) {
+          showNoData();
+          return;
+        }
+
+        // Detect price change for flash animation
+        const updated = list.map((item) => {
+          const prev =
+            lastPricesRef.current[item.instrument_token];
+          const flash =
+            prev !== undefined &&
+            prev !== item.last_price;
+
+          lastPricesRef.current[item.instrument_token] =
+            item.last_price;
+
+          return { ...item, __flash: flash };
+        });
+
+        setRecords(updated);
+        setError("");
+
+        // Remove flash after animation
+        setTimeout(() => {
+          setRecords((prev) =>
+            prev.map((r) => ({ ...r, __flash: false }))
+          );
+        }, 600);
+      } catch (err) {
+        console.error("WebSocket parse error:", err);
+        showNoData();
       }
+    };
 
-      const data = await res.json();
+    wsRef.current.onclose = () => {
+      clearInterval(heartbeatRef.current);
+      setTimeout(connectWebSocket, 1000); // auto-reconnect
+    };
 
-      // If API returns a single object, normalize to array
-      const list = Array.isArray(data) ? data : [data];
-      setRecords(list);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Something went wrong");
-      setLoading(false);
-    }
-  };
+    wsRef.current.onerror = () => {
+      wsRef.current.close();
+    };
+  }, [showNoData]);
 
   useEffect(() => {
-    // Initial fetch
-    fetchData();
+    connectWebSocket();
 
-    // Refetch every 10 seconds
-    const intervalId = setInterval(fetchData, 1010);
-
-    // Cleanup interval on unmount
-    return () => clearInterval(intervalId);
-  }, []);
+    return () => {
+      wsRef.current?.close();
+      clearInterval(heartbeatRef.current);
+    };
+  }, [connectWebSocket]);
 
   return (
     <div className="rm-page">
@@ -47,7 +135,7 @@ const First = () => {
         <div>
           <h1 className="rm-title">Live Market</h1>
           <p className="rm-subtitle">
-            Updating every <span className="rm-highlight">seconds</span>
+            Real-time <span className="rm-highlight">Data</span>
           </p>
         </div>
         <div className="rm-status-pill">
@@ -56,28 +144,28 @@ const First = () => {
         </div>
       </header>
 
-      {loading && <div className="rm-info-box">Loading latest data…</div>}
-
-      {error && (
-        <div className="rm-error-box">
-          ⚠️ Failed to load data: <span>{error}</span>
-        </div>
+      {/* Fixed popup for 404 / no data */}
+      {error && records.length === 0 && (
+        <div className="rm-center-message">{error}</div>
       )}
 
-      {!loading && !error && (
+      {/* Cards (render ONLY when data exists) */}
+      {records.length > 0 && (
         <div className="rm-grid">
           {records.map((item) => {
             const change = Number(item.change) || 0;
             const isPositive = change >= 0;
-            const instrumentType = (item.instrument_type || "").toUpperCase();
-            const isFut = instrumentType === "FUT";
+            const isFut =
+              (item.instrument_type || "").toUpperCase() === "FUT";
 
             return (
               <div
-                className={`rm-card ${isPositive ? "rm-glow-green" : "rm-glow-red"}`}
-                key={item.instrument_token || item.tradingsymbol}
+                key={item.instrument_token}
+                className={`rm-card ${
+                  isPositive ? "rm-glow-green" : "rm-glow-red"
+                }`}
               >
-                {/* Top section */}
+                {/* Header */}
                 <div className="rm-card-header">
                   <div>
                     <div className="rm-symbol">{item.name}</div>
@@ -88,12 +176,16 @@ const First = () => {
                   </div>
                 </div>
 
-                {/* Price section */}
+                {/* Price */}
                 <div className="rm-price-row">
                   <div>
                     <div className="rm-price-label">Last Price</div>
-                    <div className="rm-price">
-                      ₹{Number(item.last_price || 0).toFixed(2)}
+                    <div
+                      className={`rm-price ${
+                        item.__flash ? "rm-price-flash" : ""
+                      }`}
+                    >
+                      ₹{Number(item.last_price).toFixed(2)}
                     </div>
                   </div>
                   <div
@@ -106,7 +198,7 @@ const First = () => {
                   </div>
                 </div>
 
-                {/* Middle meta section */}
+                {/* Meta */}
                 <div className="rm-meta-grid">
                   <div className="rm-meta-item">
                     <span className="rm-meta-label">Expiry</span>
@@ -116,33 +208,33 @@ const First = () => {
                         : "-"}
                     </span>
                   </div>
-                  
-                  {/* STRIKE - hide when FUT */}
+
                   {!isFut ? (
                     <div className="rm-meta-item">
                       <span className="rm-meta-label">Strike</span>
                       <span className="rm-meta-value">{item.strike}</span>
                     </div>
                   ) : (
-                    <div className="rm-meta-item">{/* placeholder keeps spacing equal */}</div>
+                    <div className="rm-meta-item" />
                   )}
 
-                  
-
                   <div className="rm-meta-item rm-yt-space">
-                    <span className="rm-meta-label yesterday-volume-label">Yday Volume</span>
-                    <span className="rm-meta-value">{item.yesterday_volume ?? "-"}</span>
+                    <span className="rm-meta-label yesterday-volume-label">
+                      Yday Volume
+                    </span>
+                    <span className="rm-meta-value">
+                      {item.yesterday_volume ?? "-"}
+                    </span>
                   </div>
                 </div>
 
-                {/* OI / Volume section */}
+                {/* OI */}
                 <div className="rm-oi-section">
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Open Interest</div>
                     <div className="rm-oi-value">{item.oi ?? "-"}</div>
                   </div>
 
-                  {/* CHANGE IN OI - hide when FUT */}
                   {!isFut ? (
                     <div className="rm-oi-block">
                       <div className="rm-oi-label">Change in OI</div>
@@ -151,7 +243,7 @@ const First = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="rm-oi-block">{/* placeholder keeps spacing equal */}</div>
+                    <div className="rm-oi-block" />
                   )}
 
                   <div className="rm-oi-block">
@@ -164,14 +256,8 @@ const First = () => {
 
                 {/* Footer */}
                 <div className="rm-card-footer">
-                  {/* <span className="rm-chip">
-                    {item.exchange} · {item.category}
-                  </span> */}
                   <span className="rm-updated">
-                    Updated:{" "}
-                    {item.updated_at
-                      ? new Date(item.updated_at).toLocaleTimeString()
-                      : "-"}
+                    Updated: {new Date().toLocaleTimeString()}
                   </span>
                 </div>
               </div>

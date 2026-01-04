@@ -1,7 +1,11 @@
-*{
+* {
   padding: 0;
   margin: 0;
 }
+
+/* =========================
+   Page & Header
+========================= */
 
 .rm-page {
   min-height: 100vh;
@@ -25,11 +29,10 @@
   font-size: 24px;
   font-weight: 700;
   color: #f9fafb;
-  margin: 0;
 }
 
 .rm-subtitle {
-  margin: 4px 0 0;
+  margin-top: 4px;
   font-size: 14px;
   color: #9ca3af;
 }
@@ -55,12 +58,14 @@
 .rm-dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #22c55e;
   box-shadow: 0 0 10px #22c55e;
 }
 
-/* Info / error boxes */
+/* =========================
+   Info / Error / Empty
+========================= */
 
 .rm-info-box,
 .rm-error-box {
@@ -82,7 +87,35 @@
   color: #fecaca;
 }
 
-/* Grid */
+/* =========================
+   FULL SCREEN NO-DATA POPUP  ✅ FIX
+========================= */
+
+.rm-center-message {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+
+  color: #e5e7eb;
+  background: radial-gradient(
+    circle at center,
+    rgba(2, 6, 23, 0.96),
+    rgba(0, 0, 0, 0.99)
+  );
+}
+
+/* =========================
+   Grid
+========================= */
 
 .rm-grid {
   display: grid;
@@ -90,7 +123,9 @@
   gap: 18px;
 }
 
-/* Card */
+/* =========================
+   Card
+========================= */
 
 .rm-card {
   background: linear-gradient(145deg, #020617, #020617, #030712);
@@ -114,13 +149,14 @@
   pointer-events: none;
 }
 
-/* Card header */
+/* =========================
+   Card Header
+========================= */
 
 .rm-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  position: relative;
   z-index: 1;
   gap: 8px;
 }
@@ -129,7 +165,6 @@
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #e5e7eb;
 }
 
 .rm-name {
@@ -144,17 +179,16 @@
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.5);
   background: rgba(15, 23, 42, 0.85);
-  color: #e5e7eb;
 }
 
-/* Price row */
+/* =========================
+   Price Row
+========================= */
 
 .rm-price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
-  position: relative;
   z-index: 1;
 }
 
@@ -169,7 +203,20 @@
   font-size: 22px;
   font-weight: 700;
   margin-top: 4px;
-  color: #f9fafb;
+}
+
+/* Price flash animation */
+.rm-price-flash {
+  animation: priceFlash 0.6s ease-in-out;
+}
+
+@keyframes priceFlash {
+  0% {
+    background: rgba(34, 197, 94, 0.35);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .rm-change-pill {
@@ -178,7 +225,6 @@
   font-size: 12px;
   font-weight: 600;
   display: inline-flex;
-  align-items: center;
   gap: 4px;
 }
 
@@ -194,23 +240,22 @@
   border: 1px solid rgba(239, 68, 68, 0.8);
 }
 
-/* Meta grid
-   - Use 3 equal columns to keep Strike / Expiry / Yesterday aligned
-   - When Strike is hidden (FUT), the remaining two items will keep consistent widths
-*/
+/* =========================
+   Meta Grid
+========================= */
+
 .rm-meta-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* always 3 equal columns */
-  column-gap: 14px; /* minimal clean space */
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 14px;
   margin-top: 10px;
-  position: relative;
-  z-index: 1;
 }
 
 .rm-meta-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;  
+  gap: 2px;
+  min-width: 0;
 }
 
 .rm-meta-label {
@@ -220,21 +265,22 @@
   color: #6b7280;
 }
 
+.rm-meta-value {
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .rm-yt-space {
   min-width: 0;
 }
 
-.rm-meta-item .rm-meta-label.yesterday-volume-label {
+.rm-meta-label.yesterday-volume-label {
   white-space: nowrap;
 }
 
-.rm-meta-value {
-  font-size: 12px;
-  font-weight: 500;
-  color: #e5e7eb;
-}
-
-/* OI & volume */
+/* =========================
+   OI Section
+========================= */
 
 .rm-oi-section {
   display: flex;
@@ -245,15 +291,12 @@
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(30, 64, 175, 0.45);
-  position: relative;
-  z-index: 1;
 }
 
 .rm-oi-block {
   flex: 1;
   min-width: 0;
 }
-
 
 .rm-oi-label {
   font-size: 10px;
@@ -263,28 +306,18 @@
 .rm-oi-value {
   font-size: 13px;
   font-weight: 500;
-  color: #e5e7eb;
   margin-top: 3px;
 }
 
-/* Footer */
+/* =========================
+   Footer
+========================= */
 
 .rm-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
-  position: relative;
-  z-index: 1;
-}
-
-.rm-chip {
-  font-size: 11px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  color: #d1d5db;
 }
 
 .rm-updated {
@@ -292,25 +325,23 @@
   color: #6b7280;
 }
 
-/* Responsive tweaks */
+/* =========================
+   Responsive
+========================= */
 
 @media (max-width: 640px) {
-
   .rm-grid {
     grid-template-columns: 1fr;
   }
 
-  /* make meta grid stack on small screens for perfect readability */
   .rm-meta-grid {
     grid-template-columns: 1fr;
   }
-
-  .rm-yt-space {
-    margin-left: 0;
-  }
 }
 
-/* Dynamic Glowing Borders for Positive / Negative Change */
+/* =========================
+   Glowing Borders
+========================= */
 
 .rm-glow-green {
   animation: greenGlow 1.5s infinite alternate;
@@ -322,4 +353,22 @@
   animation: redGlow 1.5s infinite alternate;
   border: 2px solid rgba(239, 68, 68, 0.8) !important;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+
+@keyframes greenGlow {
+  from {
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+  }
+}
+
+@keyframes redGlow {
+  from {
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+  }
+  to {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.9);
+  }
 }
