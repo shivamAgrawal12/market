@@ -57,7 +57,7 @@
   background: #020617;
   border-radius: 16px;
   padding: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid rgba(148,163,184,0.25);
 }
 
 .rm-card-header {
@@ -136,12 +136,28 @@
   color: #6b7280;
 }
 
-.rm-center-message {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: #020617;
+.rm-info-box,
+.rm-error-box {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  font-size: 14px;
 }
+
+.rm-info-box {
+  background: rgba(59,130,246,0.15);
+}
+
+.rm-error-box {
+  background: rgba(239,68,68,0.15);
+}
+
+.rm-glow-green {
+  border: 2px solid rgba(34,197,94,0.7);
+}
+
+.rm-glow-red {
+  border: 2px solid rgba(239,68,68,0.7);
+}
+
 
