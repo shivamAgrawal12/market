@@ -17,27 +17,31 @@ const First = () => {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const data = await res.json();
+      const response = await res.json();
 
-      // If API returns a single object, normalize to array
-      const list = Array.isArray(data) ? data : [data];
+      // ✅ SAFELY NORMALIZE API RESPONSE
+      let list = [];
+
+      if (Array.isArray(response)) {
+        list = response;
+      } else if (Array.isArray(response?.data)) {
+        list = response.data;
+      } else if (typeof response === "object" && response !== null) {
+        list = [response];
+      }
+
       setRecords(list);
       setLoading(false);
     } catch (err) {
-      console.error(err);
+      console.error("API Error:", err);
       setError(err.message || "Something went wrong");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchData();
-
-    // Refetch every 10 seconds
-    const intervalId = setInterval(fetchData, 1010);
-
-    // Cleanup interval on unmount
+    const intervalId = setInterval(fetchData, 1000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -58,37 +62,43 @@ const First = () => {
 
       {loading && <div className="rm-info-box">Loading latest data…</div>}
 
+      {!loading && records.length === 0 && !error && (
+        <div className="rm-info-box">No data available</div>
+      )}
+
       {error && (
         <div className="rm-error-box">
           ⚠️ Failed to load data: <span>{error}</span>
         </div>
       )}
 
-      {!loading && !error && (
+      {!loading && !error && records.length > 0 && (
         <div className="rm-grid">
           {records.map((item) => {
             const change = Number(item.change) || 0;
             const isPositive = change >= 0;
-            const instrumentType = (item.instrument_type || "").toUpperCase();
-            const isFut = instrumentType === "FUT";
+            const isFut =
+              (item.instrument_type || "").toUpperCase() === "FUT";
 
             return (
               <div
-                className={`rm-card ${isPositive ? "rm-glow-green" : "rm-glow-red"}`}
                 key={item.instrument_token || item.tradingsymbol}
+                className={`rm-card ${
+                  isPositive ? "rm-glow-green" : "rm-glow-red"
+                }`}
               >
-                {/* Top section */}
+                {/* Header */}
                 <div className="rm-card-header">
                   <div>
-                    <div className="rm-symbol">{item.name}</div>
-                    <div className="rm-name">{item.tradingsymbol}</div>
+                    <div className="rm-symbol">{item.name || "-"}</div>
+                    <div className="rm-name">{item.tradingsymbol || "-"}</div>
                   </div>
                   <div className="rm-instrument-type">
-                    {item.instrument_type}
+                    {item.instrument_type || "-"}
                   </div>
                 </div>
 
-                {/* Price section */}
+                {/* Price */}
                 <div className="rm-price-row">
                   <div>
                     <div className="rm-price-label">Last Price</div>
@@ -106,8 +116,19 @@ const First = () => {
                   </div>
                 </div>
 
-                {/* Middle meta section */}
+                {/* Meta grid */}
                 <div className="rm-meta-grid">
+                  {!isFut ? (
+                    <div className="rm-meta-item">
+                      <span className="rm-meta-label">Strike</span>
+                      <span className="rm-meta-value">
+                        {item.strike ?? "-"}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="rm-meta-item"></div>
+                  )}
+
                   <div className="rm-meta-item">
                     <span className="rm-meta-label">Expiry</span>
                     <span className="rm-meta-value">
@@ -116,33 +137,24 @@ const First = () => {
                         : "-"}
                     </span>
                   </div>
-                  
-                  {/* STRIKE - hide when FUT */}
-                  {!isFut ? (
-                    <div className="rm-meta-item">
-                      <span className="rm-meta-label">Strike</span>
-                      <span className="rm-meta-value">{item.strike}</span>
-                    </div>
-                  ) : (
-                    <div className="rm-meta-item">{/* placeholder keeps spacing equal */}</div>
-                  )}
-
-                  
 
                   <div className="rm-meta-item rm-yt-space">
-                    <span className="rm-meta-label yesterday-volume-label">Yday Volume</span>
-                    <span className="rm-meta-value">{item.yesterday_volume ?? "-"}</span>
+                    <span className="rm-meta-label yesterday-volume-label">
+                      Yday Volume
+                    </span>
+                    <span className="rm-meta-value">
+                      {item.yesterday_volume ?? "-"}
+                    </span>
                   </div>
                 </div>
 
-                {/* OI / Volume section */}
+                {/* OI section */}
                 <div className="rm-oi-section">
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Open Interest</div>
                     <div className="rm-oi-value">{item.oi ?? "-"}</div>
                   </div>
 
-                  {/* CHANGE IN OI - hide when FUT */}
                   {!isFut ? (
                     <div className="rm-oi-block">
                       <div className="rm-oi-label">Change in OI</div>
@@ -151,7 +163,7 @@ const First = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="rm-oi-block">{/* placeholder keeps spacing equal */}</div>
+                    <div className="rm-oi-block"></div>
                   )}
 
                   <div className="rm-oi-block">
@@ -164,9 +176,6 @@ const First = () => {
 
                 {/* Footer */}
                 <div className="rm-card-footer">
-                  {/* <span className="rm-chip">
-                    {item.exchange} · {item.category}
-                  </span> */}
                   <span className="rm-updated">
                     Updated:{" "}
                     {item.updated_at
@@ -184,3 +193,4 @@ const First = () => {
 };
 
 export default First;
+
