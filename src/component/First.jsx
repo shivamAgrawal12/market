@@ -3,7 +3,7 @@ import "./First.css";
 
 const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/data";
 
-// number formatter → K / M / B
+// Format large numbers → K / M / B
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "-";
   if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
@@ -15,46 +15,38 @@ const formatNumber = (num) => {
 const First = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [is404, setIs404] = useState(false);
+  const [error, setError] = useState(null);
 
-  const prevPrices = useRef({});
+  const prevPricesRef = useRef({});
 
   const fetchData = async () => {
     try {
       const res = await fetch(API_URL);
 
-      if (res.status === 404) {
-        setIs404(true);
-        setLoading(false);
-        return;
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status}`);
       }
 
       const data = await res.json();
       const list = Array.isArray(data) ? data : [data];
 
       setRecords(list);
-      setIs404(false);
+      setError(null);
       setLoading(false);
     } catch (err) {
       console.error(err);
+      setError("Unable to fetch market data");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 1000); // every 1 sec
-    return () => clearInterval(interval);
-  }, []);
+    fetchData(); // initial fetch
 
-  if (is404) {
-    return (
-      <div className="rm-center-message">
-        <h2>No live market data</h2>
-        <p>Please try again later</p>
-      </div>
-    );
-  }
+    const interval = setInterval(fetchData, 1000); // every 1 second
+
+    return () => clearInterval(interval); // cleanup
+  }, []);
 
   return (
     <div className="rm-page">
@@ -72,21 +64,23 @@ const First = () => {
 
       {loading && <div className="rm-info-box">Loading data…</div>}
 
+      {error && <div className="rm-error-box">{error}</div>}
+
       <div className="rm-grid">
         {records.map((item) => {
           const change = Number(item.change) || 0;
           const isPositive = change >= 0;
           const isFut = (item.instrument_type || "").toUpperCase() === "FUT";
 
-          const prev = prevPrices.current[item.instrument_token];
-          const flashClass =
-            prev && prev !== item.last_price
-              ? item.last_price > prev
+          const prevPrice = prevPricesRef.current[item.instrument_token];
+          const priceFlash =
+            prevPrice && prevPrice !== item.last_price
+              ? item.last_price > prevPrice
                 ? "price-up"
                 : "price-down"
               : "";
 
-          prevPrices.current[item.instrument_token] = item.last_price;
+          prevPricesRef.current[item.instrument_token] = item.last_price;
 
           return (
             <div
@@ -108,7 +102,7 @@ const First = () => {
               <div className="rm-price-row">
                 <div>
                   <div className="rm-price-label">Last Price</div>
-                  <div className={`rm-price ${flashClass}`}>
+                  <div className={`rm-price ${priceFlash}`}>
                     ₹{item.last_price.toFixed(2)}
                   </div>
                 </div>
@@ -190,4 +184,5 @@ const First = () => {
 };
 
 export default First;
+
 
