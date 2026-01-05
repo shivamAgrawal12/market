@@ -55,7 +55,7 @@ const First = () => {
         <div>
           <h1 className="rm-title">Live Market</h1>
           <p className="rm-subtitle">
-            Updating every <span className="rm-highlight">1 second</span>
+            Updating every <span className="rm-highlight">second</span>
           </p>
         </div>
         <div className="rm-status-pill">
