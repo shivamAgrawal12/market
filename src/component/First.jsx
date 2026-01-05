@@ -18,8 +18,6 @@ const First = () => {
       }
 
       const data = await res.json();
-
-      // If API returns a single object, normalize to array
       const list = Array.isArray(data) ? data : [data];
       setRecords(list);
       setLoading(false);
@@ -31,13 +29,8 @@ const First = () => {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchData();
-
-    // Refetch every 10 seconds
     const intervalId = setInterval(fetchData, 1010);
-
-    // Cleanup interval on unmount
     return () => clearInterval(intervalId);
   }, []);
 
@@ -57,7 +50,6 @@ const First = () => {
       </header>
 
       {loading && <div className="rm-info-box">Loading latest data…</div>}
-
       {error && (
         <div className="rm-error-box">
           ⚠️ Failed to load data: <span>{error}</span>
@@ -69,15 +61,14 @@ const First = () => {
           {records.map((item) => {
             const change = Number(item.change) || 0;
             const isPositive = change >= 0;
-            const instrumentType = (item.instrument_type || "").toUpperCase();
-            const isFut = instrumentType === "FUT";
+            const isFut = (item.instrument_type || "").toUpperCase() === "FUT";
 
             return (
               <div
-                className={`rm-card ${isPositive ? "rm-glow-green" : "rm-glow-red"}`}
                 key={item.instrument_token || item.tradingsymbol}
+                className={`rm-card ${isPositive ? "rm-glow-green" : "rm-glow-red"}`}
               >
-                {/* Top section */}
+                {/* Header */}
                 <div className="rm-card-header">
                   <div>
                     <div className="rm-symbol">{item.name}</div>
@@ -88,7 +79,7 @@ const First = () => {
                   </div>
                 </div>
 
-                {/* Price section */}
+                {/* Price */}
                 <div className="rm-price-row">
                   <div>
                     <div className="rm-price-label">Last Price</div>
@@ -101,21 +92,19 @@ const First = () => {
                       isPositive ? "rm-change-up" : "rm-change-down"
                     }`}
                   >
-                    {isPositive ? "▲" : "▼"}{" "}
-                    {Math.abs(change).toFixed(2)}%
+                    {isPositive ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
                   </div>
                 </div>
 
-                {/* Middle meta section */}
+                {/* Meta row */}
                 <div className="rm-meta-grid">
-                  {/* STRIKE - hide when FUT */}
                   {!isFut ? (
                     <div className="rm-meta-item">
                       <span className="rm-meta-label">Strike</span>
                       <span className="rm-meta-value">{item.strike}</span>
                     </div>
                   ) : (
-                    <div className="rm-meta-item">{/* placeholder keeps spacing equal */}</div>
+                    <div className="rm-meta-item"></div>
                   )}
 
                   <div className="rm-meta-item">
@@ -129,27 +118,32 @@ const First = () => {
 
                   <div className="rm-meta-item rm-yt-space">
                     <div className="rm-yesterday-label-box">
-                      <span className="rm-meta-label yesterday-volume-label">Yday Volume</span>
+                      <span className="rm-meta-label yesterday-volume-label">
+                        Yday Volume
+                      </span>
                     </div>
-                    <span className="rm-meta-value">{item.yesterday_volume ?? "-"}</span>
+                    <span className="rm-meta-value">
+                      {item.yesterday_volume ?? "-"}
+                    </span>
                   </div>
                 </div>
 
-                {/* OI / Volume section */}
+                {/* OI section */}
                 <div className="rm-oi-section">
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Open Interest</div>
                     <div className="rm-oi-value">{item.oi ?? "-"}</div>
                   </div>
 
-                  {/* CHANGE IN OI - hide when FUT */}
-                  {!isFut && (
+                  {!isFut ? (
                     <div className="rm-oi-block">
                       <div className="rm-oi-label">Change in OI</div>
                       <div className="rm-oi-value">
                         {item.change_in_oi ?? "-"}
                       </div>
                     </div>
+                  ) : (
+                    <div className="rm-oi-block"></div>
                   )}
 
                   <div className="rm-oi-block">
@@ -162,9 +156,6 @@ const First = () => {
 
                 {/* Footer */}
                 <div className="rm-card-footer">
-                  {/* <span className="rm-chip">
-                    {item.exchange} · {item.category}
-                  </span> */}
                   <span className="rm-updated">
                     Updated:{" "}
                     {item.updated_at
@@ -182,6 +173,7 @@ const First = () => {
 };
 
 export default First;
+
 
 
 
