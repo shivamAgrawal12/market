@@ -3,6 +3,15 @@ import "./First.css";
 
 const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/data";
 
+// number formatter → K / M / B
+const formatNumber = (num) => {
+  if (num === null || num === undefined) return "-";
+  if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+  if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(2) + "K";
+  return num;
+};
+
 const First = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +29,6 @@ const First = () => {
         return;
       }
 
-      if (!res.ok) throw new Error("API Error");
-
       const data = await res.json();
       const list = Array.isArray(data) ? data : [data];
 
@@ -36,15 +43,15 @@ const First = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 1000);
+    const interval = setInterval(fetchData, 1000); // every 1 sec
     return () => clearInterval(interval);
   }, []);
 
   if (is404) {
     return (
       <div className="rm-center-message">
-        <h2>No Market Data Available</h2>
-        <p>Please check back later.</p>
+        <h2>No live market data</h2>
+        <p>Please try again later</p>
       </div>
     );
   }
@@ -55,7 +62,7 @@ const First = () => {
         <div>
           <h1 className="rm-title">Live Market</h1>
           <p className="rm-subtitle">
-            Updating every <span className="rm-highlight">second</span>
+            Updating every <span className="rm-highlight">1 second</span>
           </p>
         </div>
         <div className="rm-status-pill">
@@ -92,7 +99,9 @@ const First = () => {
                   <div className="rm-symbol">{item.name}</div>
                   <div className="rm-name">{item.tradingsymbol}</div>
                 </div>
-                <div className="rm-instrument-type">{item.instrument_type}</div>
+                <div className="rm-instrument-type">
+                  {item.instrument_type}
+                </div>
               </div>
 
               {/* Price */}
@@ -103,7 +112,11 @@ const First = () => {
                     ₹{item.last_price.toFixed(2)}
                   </div>
                 </div>
-                <div className={`rm-change-pill ${isPositive ? "rm-change-up" : "rm-change-down"}`}>
+                <div
+                  className={`rm-change-pill ${
+                    isPositive ? "rm-change-up" : "rm-change-down"
+                  }`}
+                >
                   {isPositive ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
                 </div>
               </div>
@@ -129,7 +142,7 @@ const First = () => {
                 <div className="rm-meta-item">
                   <span className="rm-meta-label">Yday Volume</span>
                   <span className="rm-meta-value">
-                    {item.yesterday_volume ?? "-"}
+                    {formatNumber(item.yesterday_volume)}
                   </span>
                 </div>
               </div>
@@ -138,13 +151,17 @@ const First = () => {
               <div className="rm-oi-section">
                 <div className="rm-oi-block">
                   <div className="rm-oi-label">Open Interest</div>
-                  <div className="rm-oi-value">{item.oi}</div>
+                  <div className="rm-oi-value">
+                    {formatNumber(item.oi)}
+                  </div>
                 </div>
 
                 {!isFut ? (
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Change in OI</div>
-                    <div className="rm-oi-value">{item.change_in_oi}</div>
+                    <div className="rm-oi-value">
+                      {formatNumber(item.change_in_oi)}
+                    </div>
                   </div>
                 ) : (
                   <div className="rm-oi-block"></div>
@@ -152,7 +169,9 @@ const First = () => {
 
                 <div className="rm-oi-block">
                   <div className="rm-oi-label">Volume Traded</div>
-                  <div className="rm-oi-value">{item.volume_traded}</div>
+                  <div className="rm-oi-value">
+                    {formatNumber(item.volume_traded)}
+                  </div>
                 </div>
               </div>
 
@@ -171,3 +190,4 @@ const First = () => {
 };
 
 export default First;
+
