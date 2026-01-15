@@ -19,7 +19,7 @@ const First = () => {
 
       const response = await res.json();
 
-      // ✅ SAFELY NORMALIZE API RESPONSE
+      // ✅ Normalize API response safely
       let list = [];
 
       if (Array.isArray(response)) {
@@ -44,6 +44,19 @@ const First = () => {
     const intervalId = setInterval(fetchData, 1000);
     return () => clearInterval(intervalId);
   }, []);
+
+  // ✅ IST formatter
+  const formatIST = (date) =>
+    new Date(date).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
 
   return (
     <div className="rm-page">
@@ -133,7 +146,7 @@ const First = () => {
                     <span className="rm-meta-label">Expiry</span>
                     <span className="rm-meta-value">
                       {item.expiry
-                        ? new Date(item.expiry).toLocaleDateString()
+                        ? new Date(item.expiry).toLocaleDateString("en-IN")
                         : "-"}
                     </span>
                   </div>
@@ -178,9 +191,7 @@ const First = () => {
                 <div className="rm-card-footer">
                   <span className="rm-updated">
                     Updated:{" "}
-                    {item.updated_at
-                      ? new Date(item.updated_at).toLocaleTimeString()
-                      : "-"}
+                    {item.updated_at ? formatIST(item.updated_at) : "-"}
                   </span>
                 </div>
               </div>
@@ -193,4 +204,5 @@ const First = () => {
 };
 
 export default First;
+
 
