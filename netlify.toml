@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/api/*"
+  to = "http://robotmanagerv1test.qikpod.com:8000/:splat"
+  status = 200
+  force = true
