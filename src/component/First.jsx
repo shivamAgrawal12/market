@@ -1,4 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import "./First.css";
 
 const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/data";
@@ -8,11 +13,13 @@ const First = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔹 Popup Control
+  // Popup state
   const [showPopup, setShowPopup] = useState(false);
 
-  // 🔹 Interval Ref
+  // Interval ref
   const intervalRef = useRef(null);
+
+  /* ================= FETCH DATA ================= */
 
   const fetchData = async (isManual = false) => {
     try {
@@ -20,9 +27,9 @@ const First = () => {
 
       const res = await fetch(API_URL);
 
-      // ❌ If API fails
+      // Handle auth/server errors
       if (!res.ok) {
-        if ([404, 502].includes(res.status)) {
+        if ([401, 403, 404, 502].includes(res.status)) {
           throw new Error("AUTH_ERROR");
         } else {
           throw new Error(`HTTP error: ${res.status}`);
@@ -31,7 +38,7 @@ const First = () => {
 
       const response = await res.json();
 
-      // ✅ Normalize response
+      // Normalize response
       let list = [];
 
       if (Array.isArray(response)) {
@@ -45,10 +52,10 @@ const First = () => {
       setRecords(list);
       setLoading(false);
 
-      // ✅ Hide popup if success
+      // Hide popup if success
       setShowPopup(false);
 
-      // ✅ Restart auto refresh if manual refresh worked
+      // Restart polling after manual refresh
       if (isManual && !intervalRef.current) {
         startPolling();
       }
@@ -57,18 +64,28 @@ const First = () => {
 
       setLoading(false);
 
-      // ❌ Stop polling
+      // Stop polling
       stopPolling();
 
-      // ❌ Show popup
+      // Show popup
       setShowPopup(true);
 
       setError("Need to login the site");
     }
   };
 
-  // 🔹 Start Auto Polling
-  const startPolling = () => {
+  /* ================= STOP POLLING ================= */
+
+  const stopPolling = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  /* ================= START POLLING (FIXED) ================= */
+
+  const startPolling = useCallback(() => {
     stopPolling();
 
     fetchData();
@@ -76,23 +93,20 @@ const First = () => {
     intervalRef.current = setInterval(() => {
       fetchData();
     }, 1000);
-  };
+  }, [stopPolling]);
 
-  // 🔹 Stop Auto Polling
-  const stopPolling = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
+  /* ================= EFFECT ================= */
 
   useEffect(() => {
     startPolling();
 
-    return () => stopPolling();
-  }, []);
+    return () => {
+      stopPolling();
+    };
+  }, [startPolling, stopPolling]);
 
-  // ✅ IST formatter
+  /* ================= FORMAT DATE ================= */
+
   const formatIST = (date) =>
     new Date(date).toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
@@ -105,7 +119,8 @@ const First = () => {
       hour12: true,
     });
 
-  // 🔹 Manual Refresh
+  /* ================= MANUAL REFRESH ================= */
+
   const handleRefresh = () => {
     setLoading(true);
     fetchData(true);
@@ -114,26 +129,26 @@ const First = () => {
   return (
     <div className="rm-page">
 
-      {/* ================= ERROR POPUP ================= */}
+      {/* ============== ERROR POPUP ============== */}
       {showPopup && (
         <div className="rm-popup-overlay">
           <div className="rm-popup-box glitch">
             <h2>⚠️ System Error</h2>
-
             <p>Need to login the site</p>
 
             <button onClick={handleRefresh}>
-              Refresh
+              🔄 Refresh
             </button>
           </div>
         </div>
       )}
 
-      {/* ================= MAIN UI ================= */}
+      {/* ============== HEADER ============== */}
 
       <header className="rm-header">
         <div>
           <h1 className="rm-title">Live Market</h1>
+
           <p className="rm-subtitle">
             Updating every <span className="rm-highlight">seconds</span>
           </p>
@@ -145,19 +160,27 @@ const First = () => {
         </div>
       </header>
 
+      {/* ============== LOADING ============== */}
+
       {loading && !showPopup && (
         <div className="rm-info-box">Loading latest data…</div>
       )}
+
+      {/* ============== EMPTY ============== */}
 
       {!loading && records.length === 0 && !error && !showPopup && (
         <div className="rm-info-box">No data available</div>
       )}
 
+      {/* ============== GRID ============== */}
+
       {!loading && !error && records.length > 0 && !showPopup && (
         <div className="rm-grid">
           {records.map((item) => {
             const change = Number(item.change) || 0;
+
             const isPositive = change >= 0;
+
             const isFut =
               (item.instrument_type || "").toUpperCase() === "FUT";
 
@@ -172,7 +195,10 @@ const First = () => {
                 <div className="rm-card-header">
                   <div>
                     <div className="rm-symbol">{item.name || "-"}</div>
-                    <div className="rm-name">{item.tradingsymbol || "-"}</div>
+
+                    <div className="rm-name">
+                      {item.tradingsymbol || "-"}
+                    </div>
                   </div>
 
                   <div className="rm-instrument-type">
@@ -192,7 +218,9 @@ const First = () => {
 
                   <div
                     className={`rm-change-pill ${
-                      isPositive ? "rm-change-up" : "rm-change-down"
+                      isPositive
+                        ? "rm-change-up"
+                        : "rm-change-down"
                     }`}
                   >
                     {isPositive ? "▲" : "▼"}{" "}
@@ -205,6 +233,7 @@ const First = () => {
                   {!isFut ? (
                     <div className="rm-meta-item">
                       <span className="rm-meta-label">Strike</span>
+
                       <span className="rm-meta-value">
                         {item.strike ?? "-"}
                       </span>
@@ -215,9 +244,12 @@ const First = () => {
 
                   <div className="rm-meta-item">
                     <span className="rm-meta-label">Expiry</span>
+
                     <span className="rm-meta-value">
                       {item.expiry
-                        ? new Date(item.expiry).toLocaleDateString("en-IN")
+                        ? new Date(
+                            item.expiry
+                          ).toLocaleDateString("en-IN")
                         : "-"}
                     </span>
                   </div>
@@ -236,13 +268,21 @@ const First = () => {
                 {/* OI */}
                 <div className="rm-oi-section">
                   <div className="rm-oi-block">
-                    <div className="rm-oi-label">Open Interest</div>
-                    <div className="rm-oi-value">{item.oi ?? "-"}</div>
+                    <div className="rm-oi-label">
+                      Open Interest
+                    </div>
+
+                    <div className="rm-oi-value">
+                      {item.oi ?? "-"}
+                    </div>
                   </div>
 
                   {!isFut ? (
                     <div className="rm-oi-block">
-                      <div className="rm-oi-label">Change in OI</div>
+                      <div className="rm-oi-label">
+                        Change in OI
+                      </div>
+
                       <div className="rm-oi-value">
                         {item.change_in_oi ?? "-"}
                       </div>
@@ -252,7 +292,10 @@ const First = () => {
                   )}
 
                   <div className="rm-oi-block">
-                    <div className="rm-oi-label">Volume Traded</div>
+                    <div className="rm-oi-label">
+                      Volume Traded
+                    </div>
+
                     <div className="rm-oi-value">
                       {item.volume_traded ?? "-"}
                     </div>
