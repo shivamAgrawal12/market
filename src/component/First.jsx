@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useState, useRef } from "react";
+=======
+import React, { useEffect, useState } from "react";
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
 import "./First.css";
 
 const API_URL = "https://robotmanagerv1test.qikpod.com/smartdisplay/data";
@@ -8,6 +12,7 @@ const First = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+<<<<<<< HEAD
   // 🔹 Popup Control
   const [showPopup, setShowPopup] = useState(false);
 
@@ -27,11 +32,24 @@ const First = () => {
         } else {
           throw new Error(`HTTP error: ${res.status}`);
         }
+=======
+  const fetchData = async () => {
+    try {
+      setError("");
+      const res = await fetch(API_URL);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
       }
 
       const response = await res.json();
 
+<<<<<<< HEAD
       // ✅ Normalize response
+=======
+      // ✅ Normalize API response safely
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
       let list = [];
 
       if (Array.isArray(response)) {
@@ -44,6 +62,7 @@ const First = () => {
 
       setRecords(list);
       setLoading(false);
+<<<<<<< HEAD
 
       // ✅ Hide popup if success
       setShowPopup(false);
@@ -83,13 +102,25 @@ const First = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
+=======
+    } catch (err) {
+      console.error("API Error:", err);
+      setError(err.message || "Something went wrong");
+      setLoading(false);
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
     }
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     startPolling();
 
     return () => stopPolling();
+=======
+    fetchData();
+    const intervalId = setInterval(fetchData, 1000);
+    return () => clearInterval(intervalId);
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
   }, []);
 
   // ✅ IST formatter
@@ -105,6 +136,7 @@ const First = () => {
       hour12: true,
     });
 
+<<<<<<< HEAD
   // 🔹 Manual Refresh
   const handleRefresh = () => {
     setLoading(true);
@@ -131,6 +163,10 @@ const First = () => {
 
       {/* ================= MAIN UI ================= */}
 
+=======
+  return (
+    <div className="rm-page">
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
       <header className="rm-header">
         <div>
           <h1 className="rm-title">Live Market</h1>
@@ -138,13 +174,17 @@ const First = () => {
             Updating every <span className="rm-highlight">seconds</span>
           </p>
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
         <div className="rm-status-pill">
           <span className="rm-dot" />
           Live
         </div>
       </header>
 
+<<<<<<< HEAD
       {loading && !showPopup && (
         <div className="rm-info-box">Loading latest data…</div>
       )}
@@ -154,6 +194,21 @@ const First = () => {
       )}
 
       {!loading && !error && records.length > 0 && !showPopup && (
+=======
+      {loading && <div className="rm-info-box">Loading latest data…</div>}
+
+      {!loading && records.length === 0 && !error && (
+        <div className="rm-info-box">No data available</div>
+      )}
+
+      {error && (
+        <div className="rm-error-box">
+          ⚠️ Failed to load data: <span>{error}</span>
+        </div>
+      )}
+
+      {!loading && !error && records.length > 0 && (
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
         <div className="rm-grid">
           {records.map((item) => {
             const change = Number(item.change) || 0;
@@ -174,7 +229,10 @@ const First = () => {
                     <div className="rm-symbol">{item.name || "-"}</div>
                     <div className="rm-name">{item.tradingsymbol || "-"}</div>
                   </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                   <div className="rm-instrument-type">
                     {item.instrument_type || "-"}
                   </div>
@@ -184,12 +242,18 @@ const First = () => {
                 <div className="rm-price-row">
                   <div>
                     <div className="rm-price-label">Last Price</div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                     <div className="rm-price">
                       ₹{Number(item.last_price || 0).toFixed(2)}
                     </div>
                   </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                   <div
                     className={`rm-change-pill ${
                       isPositive ? "rm-change-up" : "rm-change-down"
@@ -200,7 +264,11 @@ const First = () => {
                   </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* Meta */}
+=======
+                {/* Meta grid */}
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                 <div className="rm-meta-grid">
                   {!isFut ? (
                     <div className="rm-meta-item">
@@ -226,14 +294,21 @@ const First = () => {
                     <span className="rm-meta-label yesterday-volume-label">
                       Yday Volume
                     </span>
+<<<<<<< HEAD
 
+=======
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                     <span className="rm-meta-value">
                       {item.yesterday_volume ?? "-"}
                     </span>
                   </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* OI */}
+=======
+                {/* OI section */}
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                 <div className="rm-oi-section">
                   <div className="rm-oi-block">
                     <div className="rm-oi-label">Open Interest</div>
@@ -263,9 +338,13 @@ const First = () => {
                 <div className="rm-card-footer">
                   <span className="rm-updated">
                     Updated:{" "}
+<<<<<<< HEAD
                     {item.updated_at
                       ? formatIST(item.updated_at)
                       : "-"}
+=======
+                    {item.updated_at ? formatIST(item.updated_at) : "-"}
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
                   </span>
                 </div>
               </div>
@@ -277,4 +356,10 @@ const First = () => {
   );
 };
 
+<<<<<<< HEAD
 export default First;
+=======
+export default First;
+
+
+>>>>>>> e9b6ddc15460c1b34fd1ea9954bff280941e7c22
